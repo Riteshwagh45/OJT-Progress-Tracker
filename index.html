@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OJT Progress Tracker</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>OJT Progress Tracker</h1>
+
+    <!-- Summary Dashboard -->
+    <div class="summary">
+
+      <div class="summary-card">
+        <h3>Total Tasks</h3>
+        <p id="totalTasks">0</p>
+      </div>
+
+      <div class="summary-card">
+        <h3>Completed</h3>
+        <p id="completedTasks">0</p>
+      </div>
+
+      <div class="summary-card">
+        <h3>Pending</h3>
+        <p id="pendingTasks">0</p>
+      </div>
+
+    </div>
+
+    <!-- Task Form -->
+    <form id="taskForm">
+
+      <input 
+        type="text" 
+        id="title" 
+        placeholder="Enter Task Title"
+        required
+      />
+
+      <input 
+        type="date" 
+        id="date"
+        required
+      />
+
+      <select id="category" required>
+        <option value="">Select Category</option>
+        <option value="Java">Java</option>
+        <option value="HTML">HTML</option>
+        <option value="CSS">CSS</option>
+        <option value="JavaScript">JavaScript</option>
+      </select>
+
+      <select id="status" required>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Complete">Complete</option>
+      </select>
+
+      <!-- Notes -->
+      <textarea 
+        id="notes"
+        placeholder="Enter errors, learnings or mentor feedback"
+      ></textarea>
+
+      <button type="submit">Add Task</button>
+
+    </form>
+
+    <!-- Task List -->
+    <div id="taskList"></div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
