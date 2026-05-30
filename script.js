@@ -1,130 +1,220 @@
 const taskForm = document.getElementById("taskForm");
 const taskList = document.getElementById("taskList");
 
-// Get tasks from Local Storage
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let editIndex = -1;
 
-// Display tasks when page loads
 displayTasks();
 
-
-// Add Task
 taskForm.addEventListener("submit", function (e) {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  const title = document.getElementById("title").value;
-  const date = document.getElementById("date").value;
-  const category = document.getElementById("category").value;
-  const status = document.getElementById("status").value;
-  const notes = document.getElementById("notes").value;
+    const title = document.getElementById("title").value;
+    const date = document.getElementById("date").value;
+    const status = document.getElementById("status").value;
+    const notes = document.getElementById("notes").value;
 
-  const task = {
-    title,
-    date,
-    category,
-    status,
-    notes
-  };
+    const technologies = [];
 
-  tasks.push(task);
+    document.querySelectorAll(".tech:checked")
+        .forEach((checkbox) => {
+            technologies.push(checkbox.value);
+        });
 
-  // Save to Local Storage
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+    const task = {
+        title,
+        date,
+        category: technologies,
+        status,
+        notes
+    };
 
-  // Display Tasks
-  displayTasks();
+    if (editIndex === -1) {
+        tasks.push(task);
+    } else {
+        tasks[editIndex] = task;
+        editIndex = -1;
+    }
 
-  // Reset Form
-  taskForm.reset();
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
+    displayTasks();
+
+    taskForm.reset();
+
+    document.querySelectorAll(".tech").forEach((checkbox) => {
+        checkbox.checked = false;
+    });
 });
 
-
-// Display Tasks
 function displayTasks() {
 
-  taskList.innerHTML = "";
+    taskList.innerHTML = "";
 
-  tasks.forEach((task, index) => {
+    const searchValue =
+        document.getElementById("searchTask")
+            ? document.getElementById("searchTask").value.toLowerCase()
+            : "";
 
-    let statusClass = "";
+    tasks.forEach((task, index) => {
 
-    if (task.status === "Pending") {
-      statusClass = "pending";
-    }
-    else if (task.status === "In Progress") {
-      statusClass = "progress";
-    }
-    else {
-      statusClass = "complete";
-    }
+        const technologies =
+            task.category.join(", ").toLowerCase();
 
-    taskList.innerHTML += `
+        if (
+            !task.title.toLowerCase().includes(searchValue) &&
+            !technologies.includes(searchValue)
+        ) {
+            return;
+        }
 
-      <div class="task-card ${statusClass}">
+        let statusClass = "";
 
-        <h3>${task.title}</h3>
+        if (task.status === "Pending") {
+            statusClass = "pending";
+        }
+        else if (task.status === "In Progress") {
+            statusClass = "progress";
+        }
+        else {
+            statusClass = "complete";
+        }
 
-        <p><strong>Date:</strong> ${task.date}</p>
+        taskList.innerHTML += `
+        <div class="task-card ${statusClass}">
 
-        <p><strong>Category:</strong> ${task.category}</p>
+            <h3>${task.title}</h3>
 
-        <p><strong>Notes:</strong> ${task.notes}</p>
+            <p><strong>Date:</strong> ${task.date}</p>
 
-        <div class="status-dropdown">
+            <p><strong>Technologies:</strong> ${task.category.join(", ")}</p>
 
-          <label><strong>Status:</strong></label>
+            <p><strong>Notes:</strong> ${task.notes}</p>
 
-          <select onchange="updateStatus(${index}, this.value)">
+            <div class="status-dropdown">
 
-            <option value="Pending"
-              ${task.status === "Pending" ? "selected" : ""}>
-              Pending
-            </option>
+                <label><strong>Status:</strong></label>
 
-            <option value="In Progress"
-              ${task.status === "In Progress" ? "selected" : ""}>
-              In Progress
-            </option>
+                <select onchange="updateStatus(${index}, this.value)">
 
-            <option value="Complete"
-              ${task.status === "Complete" ? "selected" : ""}>
-              Complete
-            </option>
+                    <option value="Pending"
+                    ${task.status === "Pending" ? "selected" : ""}>
+                    Pending
+                    </option>
 
-          </select>
+                    <option value="In Progress"
+                    ${task.status === "In Progress" ? "selected" : ""}>
+                    In Progress
+                    </option>
+
+                    <option value="Complete"
+                    ${task.status === "Complete" ? "selected" : ""}>
+                    Complete
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="action-buttons">
+
+                <button class="edit-btn"
+                onclick="editTask(${index})">
+                Edit
+                </button>
+
+                <button class="delete-btn"
+                onclick="deleteTask(${index})">
+                Delete
+                </button>
+
+            </div>
 
         </div>
+        `;
+    });
 
-      </div>
-
-    `;
-  });
-
-  // Summary Dashboard
-
-  document.getElementById("totalTasks").innerText = tasks.length;
-
-  const completedTasks =
-    tasks.filter(task => task.status === "Complete").length;
-
-  const pendingTasks =
-    tasks.filter(task => task.status !== "Complete").length;
-
-  document.getElementById("completedTasks").innerText = completedTasks;
-
-  document.getElementById("pendingTasks").innerText = pendingTasks;
+    updateSummary();
 }
 
-
-// Update Status
 function updateStatus(index, newStatus) {
 
-  tasks[index].status = newStatus;
+    tasks[index].status = newStatus;
 
-  // Save updated tasks
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 
-  // Refresh UI
-  displayTasks();
+    displayTasks();
+}
+
+function deleteTask(index) {
+
+    if (confirm("Delete this task?")) {
+
+        tasks.splice(index, 1);
+
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+
+        displayTasks();
+    }
+}
+
+function editTask(index) {
+
+    const task = tasks[index];
+
+    document.getElementById("title").value = task.title;
+    document.getElementById("date").value = task.date;
+    document.getElementById("status").value = task.status;
+    document.getElementById("notes").value = task.notes;
+
+    document.querySelectorAll(".tech").forEach((checkbox) => {
+        checkbox.checked =
+            task.category.includes(checkbox.value);
+    });
+
+    editIndex = index;
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function updateSummary() {
+
+    document.getElementById("totalTasks").innerText =
+        tasks.length;
+
+    const completedTasks =
+        tasks.filter(task =>
+            task.status === "Complete"
+        ).length;
+
+    const pendingTasks =
+        tasks.filter(task =>
+            task.status !== "Complete"
+        ).length;
+
+    document.getElementById("completedTasks").innerText =
+        completedTasks;
+
+    document.getElementById("pendingTasks").innerText =
+        pendingTasks;
+
+    const percentage =
+        tasks.length === 0
+            ? 0
+            : Math.round(
+                (completedTasks / tasks.length) * 100
+            );
+
+    const progressFill =
+        document.getElementById("progressFill");
+
+    progressFill.style.width =
+        percentage + "%";
+
+    progressFill.innerText =
+        percentage + "%";
 }
